@@ -1,0 +1,335 @@
+/* HTML スライドの共通デザイン（スキル lecture-slides の部品）
+ * 1 枚 = <section class="slide"> 1280×720。PDF と機械チェックは build.mjs。数式は KaTeX。
+ *
+ * 方向
+ *   性格: 落ち着いて正確、少しだけ手書きの温度
+ *   主役: 1 枚に 1 つ。画面の絵（ターミナル・エディタなど）、グラフ・表・数式
+ *   地の色: 主色 1 色（--shikon）と灰色。強調（em）も主色。既定は紫紺（#3b3b9a）。変えるときは :root の --shikon と --rc を書き換える
+ *   役割色: 式の部品と、その説明を同じ色で結ぶときだけ使う 3 色（.ra 橙・.rb 青緑・.rc 主色）。飾りには使わない
+ *   しるし: 赤ペンの注記（丸囲み・番号）。手で書き込むのと同じ見た目。赤は役割色に使わない
+ *   枠: 1 枚の中の枠は大きさをそろえ、対称に置く（.flow.same・.grid2）
+ * 余白は 4px の倍数。文字の太さは 400 と 600。 */
+
+:root {
+  --shikon: #3b3b9a;
+  --ink: #1d2030;
+  --sub: #555a6b;
+  --muted: #8a8ea0;
+  --line: #e2e3ea;
+  --surface: #f5f5f8;
+  --pen: #d2343c;
+  --ra: #b85c00;   /* 役割色 1: 橙 */
+  --rb: #00786a;   /* 役割色 2: 青緑 */
+  --rc: #3b3b9a;   /* 役割色 3: 主色と同じ */
+  --ra-bg: #fbeedd; --rb-bg: #dcf1ed; --rc-bg: #e6e6f5;
+  --ok: #2e8b57;
+  --ng: #d2343c;
+  --term-bg: #1c1e28;
+  --term-ink: #e6e7ee;
+  --term-prompt: #86d8ae;
+  --term-dim: #8b8fa3;
+  --sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "IPAexGothic", sans-serif;
+  --mono: "Menlo", "SF Mono", "Hiragino Sans", monospace;
+  --hand: "Klee", "Klee One", "Hiragino Maru Gothic ProN", var(--sans);
+}
+
+@page { size: 1280px 720px; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #8d8fa0; }
+body { font-family: var(--sans); color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ---------- 1 枚の枠 ---------- */
+.slide { position: relative; width: 1280px; height: 720px; margin: 24px auto; background: #fff; overflow: hidden; display: flex; flex-direction: column; padding: 0 72px 48px; font-size: 28px; line-height: 1.55; break-after: page; }
+@media print {
+  body { background: #fff; } .slide { margin: 0; }
+  /* PDF では影を描かない。Chrome は影を半透明の画像で書き出し、ビューアによっては灰色の四角になる */
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; filter: none !important; }
+  .step.on { outline: 2px solid var(--shikon); outline-offset: -2px; }
+}
+.slide::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--shikon); }
+.slide > .eyebrow { margin-top: 28px; font-size: 18px; color: var(--muted); flex: none; }
+.slide > h2 { margin: 0; font-size: 38px; font-weight: 600; line-height: 1.3; flex: none; }
+.slide > .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-top: 24px; }
+.slide > .body.center { justify-content: center; }
+.slide .foot { position: absolute; left: 72px; right: 44px; bottom: 16px; display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+
+/* ---------- 表紙 ---------- */
+.slide.title { padding: 0; flex-direction: row; }
+.slide.title::before { display: none; }
+.slide.title .panel { width: 400px; background: var(--shikon); color: #fff; padding: 64px 48px; display: flex; flex-direction: column; justify-content: space-between; }
+.slide.title .panel .course { font-size: 24px; }
+.slide.title .panel .no { color: #fff; font-size: 160px; font-weight: 600; line-height: 1; white-space: nowrap; }
+.slide.title .panel .no small { font-size: 40px; font-weight: 400; margin-left: 8px; }
+.slide.title .main { flex: 1; padding: 0 72px; display: flex; flex-direction: column; justify-content: center; gap: 40px; }
+.slide.title h1 { font-size: 60px; font-weight: 600; line-height: 1.3; margin: 0; }
+.slide.title .who { font-size: 28px; }
+.slide.title .aff { font-size: 20px; color: var(--sub); margin-top: 4px; }
+
+/* ---------- 今日の流れ ---------- */
+.toc { list-style: none; margin: 0; padding: 0; counter-reset: toc; display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; }
+.toc li { counter-increment: toc; display: flex; align-items: baseline; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 30px; }
+.toc li::before { content: counter(toc); width: 28px; font-size: 24px; font-weight: 600; color: var(--shikon); }
+
+/* ---------- ゴール・まとめ（手書きの余白を残す） ---------- */
+.big-list { list-style: none; margin: 12px 0 0; padding: 0; counter-reset: big; display: flex; flex-direction: column; gap: 36px; }
+.big-list li { counter-increment: big; font-size: 40px; display: flex; align-items: baseline; gap: 24px; }
+.big-list li::before { content: counter(big); font-size: 40px; font-weight: 600; color: var(--shikon); width: 32px; }
+
+/* ---------- 文字 ---------- */
+p { margin: 0; }
+p, li, dd, dt, td, th, .note, .cap, .step { text-wrap: pretty; }
+em { font-style: normal; font-weight: 600; color: var(--shikon); }
+b { font-weight: 600; }
+code { font-family: var(--mono); font-size: 0.86em; }
+:not(pre) > code { background: var(--surface); padding: 1px 6px; border-radius: 6px; }
+.sub { color: var(--sub); }
+.small { font-size: 24px; }
+.note { margin-top: auto; font-size: 20px; color: var(--sub); }
+.cap { font-size: 20px; color: var(--sub); }
+.label { font-size: 22px; font-weight: 600; color: var(--sub); }
+
+ul.dots, ol.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+ul.dots li { position: relative; padding-left: 28px; }
+ul.dots li::before { content: ""; position: absolute; left: 4px; top: .65em; width: 8px; height: 8px; border-radius: 50%; background: var(--shikon); }
+ol.steps { counter-reset: st; }
+ol.steps[start="2"] { counter-reset: st 1; }
+ol.steps[start="4"] { counter-reset: st 3; }
+ol.steps li { counter-increment: st; position: relative; padding-left: 48px; }
+ol.steps li::before { content: counter(st); position: absolute; left: 0; top: .1em; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--shikon); color: var(--shikon); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+ul.dots.small, ol.steps.small { font-size: 24px; gap: 8px; }
+
+/* ---------- 並べる ---------- */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+.cols.c3 { grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.cols.mid { align-items: center; }
+.cols.eq { align-items: stretch; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; align-items: center; gap: 16px; }
+
+/* ---------- 用語（塗らずに罫線で区切る） ---------- */
+.terms { margin: 0; display: grid; grid-template-columns: var(--w, 200px) 1fr; column-gap: 28px; font-size: 26px; line-height: 1.5; }
+.terms > dt, .terms > dd { margin: 0; padding: 12px 0; border-top: 1px solid var(--line); }
+.terms > dt { font-weight: 600; color: var(--shikon); }
+.terms > dt:first-of-type, .terms > dt:first-of-type + dd { border-top: 2px solid var(--ink); }
+.terms.warn > dt { color: var(--pen); }
+.terms.sm { font-size: 24px; }
+
+/* ---------- 表（見出しは塗らず、太い下罫） ---------- */
+table.tbl { border-collapse: collapse; width: 100%; font-size: 24px; }
+table.tbl th, table.tbl td { padding: 8px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+table.tbl th { font-weight: 600; border-bottom: 2px solid var(--ink); }
+table.tbl td.c, table.tbl th.c { text-align: center; }
+table.tbl td.r, table.tbl th.r { text-align: right; font-variant-numeric: tabular-nums; }
+.yes { color: var(--shikon); font-weight: 600; }
+.no { color: var(--muted); }
+
+/* ---------- 流れ ---------- */
+.flow { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.flow > .arrow { flex: none; width: 40px; height: 2px; background: var(--muted); position: relative; }
+.flow > .arrow::after { content: ""; position: absolute; right: -2px; top: -6px; border-left: 12px solid var(--muted); border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+.flow.top { align-items: flex-start; }
+.flow.top > .arrow { margin-top: 120px; }
+.step.nw { white-space: nowrap; }
+.step { border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; font-size: 22px; line-height: 1.5; }
+.step .k { display: block; font-size: 28px; font-weight: 600; color: var(--shikon); margin-bottom: 4px; }
+.step.on { border-color: var(--shikon); box-shadow: inset 0 0 0 1px var(--shikon); } /* 太くしても外の大きさは変えない */
+/* 並べた枠の大きさをそろえる。横に並ぶ枠は同じ高さ、縦に積む枠は同じ幅に */
+.flow.same { align-items: stretch; }
+.flow.same > .arrow { align-self: center; }
+.flow.same > .scene, .flow.same > .step { flex: 1 1 0; min-width: 0; }
+.flow.same > .scene > .win { flex: 1; }
+.flow.same > .step { padding: 16px 12px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.win.mid { display: flex; flex-direction: column; justify-content: center; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; row-gap: 12px; align-items: stretch; }
+.grid2 > * { min-width: 0; }
+.grid2 > .label { align-self: end; }
+.scene { display: flex; flex-direction: column; gap: 12px; }
+.scene .when { font-size: 20px; color: var(--muted); }
+
+/* ---------- 窓の絵 ---------- */
+.win { border-radius: 12px; overflow: hidden; border: 1px solid #d6d8e0; background: #fff; box-shadow: 0 8px 24px rgba(20,22,32,.10); }
+.win > .bar { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; background: #eff0f4; border-bottom: 1px solid #dcdee5; font-size: 16px; color: var(--sub); }
+.win > .bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; flex: none; }
+.win > .bar i:nth-child(2) { background: #febc2e; }
+.win > .bar i:nth-child(3) { background: #28c840; }
+.win > .bar span { margin-left: 8px; }
+.win pre { margin: 0; padding: 12px 16px; font-family: var(--mono); font-size: 22px; line-height: 1.55; white-space: pre-wrap; }
+.win pre.sm { font-size: 19px; }
+
+.term { background: var(--term-bg); border-color: #0d0e15; }
+.term > .bar { background: #2a2d3b; border-bottom-color: #0d0e15; color: #b8bccd; }
+.term pre { color: var(--term-ink); }
+.term .p { color: var(--term-prompt); }
+.term .c { color: #fff; font-weight: 600; }
+.term .d { color: var(--term-dim); }
+.term .ok { color: #7fd6a4; font-weight: 600; }
+.term .ng { color: #ff8b92; font-weight: 600; }
+.term .cur { display: inline-block; width: 12px; height: 24px; background: #e6e7ee; vertical-align: -4px; }
+
+.editor > .bar .tab { background: #fff; border: 1px solid #dcdee5; border-bottom: none; border-radius: 6px 6px 0 0; padding: 4px 12px; margin-left: 8px; margin-top: 8px; font-family: var(--mono); font-size: 15px; color: var(--ink); align-self: flex-end; }
+.editor pre { counter-reset: ln; }
+.editor pre .ln { display: block; }
+.editor pre .ln::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 24px; margin-right: 16px; text-align: right; color: #b5b8c5; }
+.k { color: #a626a4; } .s { color: #2f8f4e; } .n { color: #b8740a; } .cm { color: #8a8ea0; font-style: italic; } .f { color: #3d6fe0; } .tag { color: #d6455d; }
+
+.browser > .bar .url { flex: 1; margin-left: 12px; background: #fff; border-radius: 6px; padding: 2px 12px; font-size: 15px; color: var(--sub); }
+.browser .page { padding: 16px 20px; font-size: 22px; }
+.browser .page .h1 { font-size: 30px; margin: 0 0 4px; font-weight: 600; }
+.browser .page table { border-collapse: collapse; font-size: 18px; }
+.browser .page td, .browser .page th { border-bottom: 1px solid var(--line); padding: 4px 12px; text-align: left; white-space: nowrap; }
+.browser .page th { border-bottom: 2px solid var(--ink); font-weight: 600; }
+.browser .page td.r { text-align: right; font-variant-numeric: tabular-nums; }
+.search .hit { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 17px; line-height: 1.4; }
+.search .hit b { color: #1a0dab; font-weight: 400; display: block; font-size: 19px; }
+.search .hit span { color: var(--sub); }
+
+.sheet table { border-collapse: collapse; font-size: 18px; width: 100%; }
+.sheet th { background: #f0f1f3; color: #666; font-weight: 400; border: 1px solid #d4d6da; padding: 4px 8px; }
+.sheet td { border: 1px solid #d4d6da; padding: 4px 8px; white-space: nowrap; }
+.sheet td.r { text-align: right; }
+.sheet > .bar { background: #1f7244; color: #fff; border-bottom-color: #1f7244; }
+
+.book { width: 100%; height: 100%; display: flex; gap: 0; padding: 16px; }
+.book .pg { flex: 1; border: 1px solid #d6d8e0; background: #fbfaf6; padding: 12px; font-size: 15px; line-height: 1.6; color: var(--sub); }
+.book .pg + .pg { border-left: none; }
+.book .pg b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+
+/* チャット */
+.chat { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-size: 20px; line-height: 1.5; }
+.chat .me { align-self: flex-end; max-width: 88%; background: var(--shikon); color: #fff; border-radius: 16px 16px 4px 16px; padding: 8px 16px; }
+.chat .ai { align-self: flex-start; max-width: 88%; background: var(--surface); border-radius: 16px 16px 16px 4px; padding: 8px 16px; }
+
+/* AI に頼む文 */
+.ask { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start; font-size: 24px; line-height: 1.55; }
+.ask .who { font-size: 18px; font-weight: 600; color: #fff; background: var(--shikon); border-radius: 8px; padding: 2px 12px; justify-self: start; white-space: nowrap; }
+.ask > div:last-child { border: 1px solid var(--line); border-left: 4px solid var(--shikon); border-radius: 4px 12px 12px 4px; padding: 12px 20px; }
+.ask ul { margin: 4px 0 0; padding-left: 1.1em; }
+
+/* GitHub の Commits */
+.commits { font-size: 22px; }
+.commits .crow { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-top: 1px solid #e1e4e8; }
+.commits .crow:first-of-type { border-top: none; }
+.commits .msg { flex: 1; font-weight: 600; }
+.commits .hash { font-family: var(--mono); font-size: 16px; color: #57606a; }
+.mark { width: 28px; height: 28px; border-radius: 50%; color: #fff; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none; }
+.mark.ok { background: var(--ok); }
+.mark.ng { background: var(--ng); }
+
+.icons { display: flex; gap: 20px; padding: 16px; flex-wrap: wrap; }
+.ic { width: 88px; text-align: center; font-size: 15px; }
+.ic svg { width: 64px; height: 54px; display: block; margin: 0 auto 4px; }
+
+/* ---------- 赤ペン（しるし） ---------- */
+.pen { font-family: var(--hand); color: var(--pen); font-weight: 600; }
+pre .pen { font-size: 0.9em; }
+.term pre .pen { color: #ff8b92; }
+.circ { position: relative; }
+.circ::after { content: ""; position: absolute; inset: -5px -8px; border: 3px solid var(--pen); border-radius: 999px; transform: rotate(-1.5deg); pointer-events: none; }
+.term .circ::after { border-color: #ff6b74; }
+.circ.tight::after { inset: -4px -2px; }
+.num { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid var(--pen); color: var(--pen); font-family: var(--hand); font-weight: 600; font-size: 18px; line-height: 1; vertical-align: 2px; flex: none; }
+.term .num { border-color: #ff6b74; color: #ff8b92; }
+.terms .num { margin-right: 8px; }
+.mt-auto { margin-top: auto; }
+
+/* ---------- 役割色（式の部品と説明を同じ色で結ぶ） ----------
+ * 式の中: $\ra{k=1}$ $\rb{t}$ $\rc{a_k}$。文の中: <span class="ra">どこから</span>。
+ * 表の見出しや凡例の地: .ra-bg など。1 枚に 3 色まで。相手のない色は使わない（build.mjs が拾う）。
+ * 色だけに頼らない: 説明の側には必ず言葉（「どこから」「初項」）を書く。 */
+.ra, .katex .ra { color: var(--ra); }
+.rb, .katex .rb { color: var(--rb); }
+.rc, .katex .rc { color: var(--rc); }
+span.ra, span.rb, span.rc, b.ra, b.rb, b.rc, dt.ra, dt.rb, dt.rc { font-weight: 600; }
+.ra-bg { background: var(--ra-bg); } .rb-bg { background: var(--rb-bg); } .rc-bg { background: var(--rc-bg); }
+/* 式の読み方: 大きな式の下に、部品ごとの説明を色の見出しで並べる */
+.parts { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); gap: 24px; font-size: 24px; line-height: 1.5; }
+.parts > div { border-top: 3px solid currentColor; padding-top: 8px; }
+.parts > div > b { display: block; font-size: 26px; }
+.parts > div > span { color: var(--ink); }
+
+/* ---------- 数式（KaTeX） ---------- */
+.katex { font-size: 1.08em; font-family: KaTeX_Main, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif; }
+.katex .text { font-family: var(--sans); }
+.disp, .mblock { text-align: center; font-size: 34px; line-height: 1.4; }
+.disp.sm, .mblock { font-size: 28px; }
+.disp.lg { font-size: 44px; }
+.mblock { padding: 4px 0; }
+.mblock.left { text-align: left; }
+.disp .katex-display, .mblock .katex-display { margin: 0; }
+em .katex, .terms dt .katex { color: inherit; }
+.katex .circ::after { inset: -4px -6px; }
+
+/* 問題文（(1)(2)… の番号） */
+ol.qs { margin: 0; padding: 0; list-style: none; counter-reset: q; display: flex; flex-direction: column; gap: 12px; }
+ol.qs li { counter-increment: q; position: relative; padding-left: 52px; }
+ol.qs li::before { content: "(" counter(q) ")"; position: absolute; left: 0; font-weight: 600; color: var(--shikon); }
+ol.qs.small { font-size: 24px; gap: 8px; }
+.q { font-weight: 600; color: var(--shikon); margin-right: 8px; }
+/* 問題・課題の文（左に主色の罫） */
+.prob { border-left: 4px solid var(--shikon); padding: 4px 0 4px 20px; }
+
+/* 数の表 */
+table.tbl.ctr td, table.tbl.ctr th { text-align: center; font-variant-numeric: tabular-nums; }
+table.tbl.ctr td:first-child, table.tbl.ctr th:first-child { text-align: left; }
+table.tbl.tight td, table.tbl.tight th { padding-top: 4px; padding-bottom: 4px; }
+table.tbl td.hl, table.tbl th.hl { border-top: 2px solid var(--ink); }
+table.tbl tr.sum td { border-top: 2px solid var(--ink); font-weight: 600; }
+
+/* グラフ（SVG） */
+svg.chart, .graph { display: block; max-width: 100%; height: auto; }
+.graph text { font-family: var(--sans); fill: var(--sub); }
+.graph text.ra, svg.chart text.ra { fill: var(--ra); } .graph text.rb, svg.chart text.rb { fill: var(--rb); } .graph text.rc, svg.chart text.rc { fill: var(--rc); }
+.graph .axis { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.graph .guide { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 5; fill: none; }
+.graph .pen-t { font-family: var(--hand); fill: var(--pen); font-weight: 600; }
+.legend { display: flex; justify-content: flex-end; gap: 20px; font-size: 18px; color: var(--sub); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; width: 16px; height: 16px; border: 1.5px solid var(--shikon); }
+/* 横に積んだ 100% 棒 */
+.hbars { display: flex; flex-direction: column; gap: 12px; font-size: 18px; }
+.hbars .hb { display: grid; grid-template-columns: 56px 1fr 56px; align-items: center; gap: 8px; }
+.hbars .bar { display: flex; height: 40px; }
+.hbars .bar > span { display: flex; align-items: center; justify-content: center; color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
+.hbars .rest { color: var(--sub); font-variant-numeric: tabular-nums; }
+
+/* ---------- Zed の画面（左にエージェント、中央にエディタ、その下にターミナル、右にファイル） ----------
+ * <div class="win zed">
+ *   <div class="bar"><i></i><i></i><i></i><span>my-project</span></div>
+ *   <div class="zbody">
+ *     <div class="zagent"><div class="zhead">エージェント</div> … .chat …</div>
+ *     <div class="zmain"><div class="ztabs"><span class="tab">hello.py</span></div><pre>…</pre>
+ *       <div class="zterm"><div class="zhead">ターミナル</div><pre>…</pre></div></div>
+ *     <div class="zfiles"><div class="zhead">my-project</div><ul><li class="dir">python</li>…</ul></div>
+ *   </div>
+ * </div>
+ * 幅・高さは style="--h:360px" で変える。注目させる区画には .on（赤ペンの枠）を付ける。 */
+.zed .zbody { display: grid; grid-template-columns: 1.05fr 1.6fr 0.85fr; height: var(--h, 360px); font-size: 15px; line-height: 1.5; }
+.zed .zagent, .zed .zfiles { background: var(--surface); display: flex; flex-direction: column; min-width: 0; }
+.zed .zagent { border-right: 1px solid var(--line); }
+.zed .zfiles { border-left: 1px solid var(--line); }
+.zed .zmain { display: flex; flex-direction: column; min-width: 0; }
+.zed .zhead { flex: none; height: 28px; display: flex; align-items: center; padding: 0 10px; font-size: 14px; color: var(--sub); border-bottom: 1px solid var(--line); }
+.zed .ztabs { flex: none; height: 28px; display: flex; align-items: flex-end; padding-left: 8px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.zed .ztabs .tab { background: #fff; border: 1px solid var(--line); border-bottom: none; border-radius: 6px 6px 0 0; padding: 2px 10px; font-family: var(--mono); font-size: 14px; color: var(--ink); }
+.zed .zmain > pre { flex: 1; margin: 0; padding: 8px 12px; font-family: var(--mono); font-size: 16px; line-height: 1.6; white-space: pre; overflow: hidden; }
+.zed .zterm { flex: none; height: 42%; display: flex; flex-direction: column; background: var(--term-bg); color: var(--term-ink); }
+.zed .zterm .zhead { color: #b8bccd; border-bottom-color: #0d0e15; background: #2a2d3b; }
+.zed .zterm pre { flex: 1; margin: 0; padding: 6px 12px; font-family: var(--mono); font-size: 15px; line-height: 1.6; white-space: pre; overflow: hidden; }
+.zed .zterm .p { color: var(--term-prompt); }
+.zed .zagent .chat { padding: 8px; gap: 6px; font-size: 14px; line-height: 1.45; }
+.zed .zagent .chat .me, .zed .zagent .chat .ai { max-width: 100%; padding: 4px 8px; border-radius: 8px; }
+.zed .zagent .zinput { margin: auto 8px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: 4px 8px; font-size: 14px; color: var(--sub); }
+.zed .zfiles ul { list-style: none; margin: 0; padding: 6px 10px; font-size: 15px; line-height: 1.7; }
+.zed .zfiles li.dir::before { content: "▸ "; color: var(--muted); }
+.zed .zfiles li.in { padding-left: 14px; }
+.zed .on { outline: 3px solid var(--pen); outline-offset: -3px; }
+
+/* ---------- 補助 ---------- */
+/* 用語の見出しにも役割色を付けられるように（.terms > dt の主色より優先） */
+.terms > dt.ra { color: var(--ra); } .terms > dt.rb { color: var(--rb); } .terms > dt.rc { color: var(--rc); }
+/* 折り返さない（text-wrap: pretty の上から効かせる） */
+.nw { white-space: nowrap; text-wrap-mode: nowrap; }
+/* SVG の文字に赤ペン・役割色（.graph text の灰色より優先） */
+.graph text.pen, svg.chart text.pen { fill: var(--pen); }
+/* 出典の小さい文字 */
+.src { font-size: 16px; color: var(--muted); }

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>資料名 第N回</title>
+<!-- プロジェクト直下の slides/ を使う。このファイルは <フォルダ>/slides.html に置く -->
+<!-- 数式を使わないなら、KaTeX の 3 行（下の link 1 行と、末尾の script 2 行）を消してよい -->
+<link rel="stylesheet" href="../slides/node_modules/katex/dist/katex.min.css">
+<link rel="stylesheet" href="../slides/deck.css">
+<style>
+  /* このスライドだけの調整。2 本以上で使うものは slides/deck.css に足す */
+</style>
+</head>
+<body data-course="資料名" data-lecture="第N回">
+
+<!-- ============ 表紙・流れ・ゴール ============ -->
+<section class="slide title">
+  <div class="panel">
+    <div class="course">資料名</div>
+    <div class="no">N<small>回</small></div>
+  </div>
+  <div class="main">
+    <div>
+      <h1>この回の題</h1>
+      <p class="sub" style="font-size:28px;margin-top:12px">副題</p>
+    </div>
+    <div>
+      <div class="who">名前</div>
+      <div class="aff">所属</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>今日の流れ</h2>
+  <div class="body center"><ol class="toc" data-auto></ol></div>
+</section>
+
+<section class="slide" data-section="今日のゴール">
+  <h2>今日のゴール</h2>
+  <div class="body">
+    <ol class="big-list">
+      <li><span><em>用語</em>を説明する</span></li>
+      <li><span>式を読んで計算する</span></li>
+      <li><span>道具を動かして確かめる</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 型の見本（不要なものは消す） ============ -->
+<section class="slide" data-section="型の見本">
+  <h2>用語の定義</h2>
+  <div class="body">
+    <dl class="terms" style="--w:200px">
+      <dt>用語 1</dt><dd>短い説明。1〜2 行に収める</dd>
+      <dt>用語 2</dt><dd>短い説明。例を 1 つ添えると伝わりやすい</dd>
+    </dl>
+    <dl class="terms warn sm" style="--w:200px">
+      <dt>よくある間違い</dt><dd>間違えやすい点と、正しい読み方</dd>
+    </dl>
+    <p class="note">補足は下端に 1〜2 行。</p>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>流れ（3〜4 段）</h2>
+  <div class="body">
+    <div class="flow same">
+      <div class="step"><span class="k">決める</span>何を作るか</div><div class="arrow"></div>
+      <div class="step"><span class="k">頼む</span>AI に伝える</div><div class="arrow"></div>
+      <div class="step on"><span class="k">確かめる</span>テストを通す</div>
+    </div>
+    <ul class="dots">
+      <li>箱の大きさは自動でそろう（<code>.flow.same</code>）</li>
+      <li>強調する段は <code>.step.on</code>。大きさは変わらない</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>2 つを並べて比べる</h2>
+  <div class="body">
+    <div class="grid2">
+      <div class="label">コードを書く</div>
+      <div class="label">動かした結果</div>
+      <div class="win editor"><div class="bar"><i></i><i></i><i></i><span class="tab">hello.py</span></div>
+<pre><span class="ln"><span class="f">print</span>(<span class="s">"こんにちは"</span>)</span><span class="ln"><span class="f">print</span>(<span class="n">3000</span> / <span class="n">4</span>)</span></pre></div>
+      <div class="win term"><div class="bar"><i></i><i></i><i></i><span>ターミナル</span></div>
+<pre><span class="p">&gt;</span> <span class="c">python hello.py</span>
+こんにちは
+<span class="circ">750.0</span>  <span class="pen">← 計算した</span></pre></div>
+      <p class="small">左右の段（見出し・絵・説明）がそろう</p>
+      <p class="small">注記は赤ペン（<code>.pen</code> <code>.circ</code>）</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>式の読み方（役割色）</h2>
+  <div class="body">
+    <div class="disp lg">$\displaystyle \sum_{\ra{k=1}}^{\rb{t}} \rc{a_k} = a_1 + a_2 + \cdots + a_t$</div>
+    <div class="parts">
+      <div class="ra"><b>下の $k = 1$</b><span>どこから足すか</span></div>
+      <div class="rb"><b>上の $t$</b><span>どこまで足すか</span></div>
+      <div class="rc"><b>右の $a_k$</b><span>何を足すか</span></div>
+    </div>
+    <p class="note">役割色は、式の部品と説明の両方に付ける。1 枚に 3 色まで。</p>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>表で比べる</h2>
+  <div class="body">
+    <table class="tbl">
+      <tr><th>観点</th><th>A</th><th>B</th></tr>
+      <tr><td>速さ</td><td class="yes">速い</td><td class="no">遅い</td></tr>
+      <tr><td>手軽さ</td><td class="no">手間がかかる</td><td class="yes">すぐ試せる</td></tr>
+      <tr><td>向いていること</td><td>大きな仕組み</td><td>小さな作業の自動化</td></tr>
+    </table>
+    <p class="note">見出しは塗らない。強調は主色の太字（<code>.yes</code>）。</p>
+  </div>
+</section>
+
+<!-- ============ まとめ ============ -->
+<section class="slide" data-section="まとめ">
+  <h2>今日のまとめ</h2>
+  <div class="body">
+    <ol class="big-list">
+      <li><span>覚えて帰ること 1</span></li>
+      <li><span>覚えて帰ること 2</span></li>
+    </ol>
+  </div>
+</section>
+
+<script src="../slides/node_modules/katex/dist/katex.min.js"></script>
+<script src="../slides/node_modules/katex/dist/contrib/auto-render.min.js"></script>
+<script src="../slides/deck.js"></script>
+</body>
+</html>
